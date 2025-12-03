@@ -11,7 +11,6 @@ public class EWalletServiceImpl implements ApplicationService {
 
     @Override
     public void startApplication() {
-        System.out.println("welcome sir");
         System.out.println("Welcome to EWalletSystem");
         boolean isExit = false;
         int count = 0;
