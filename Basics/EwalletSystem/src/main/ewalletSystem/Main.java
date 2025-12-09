@@ -7,10 +7,7 @@ import main.ewalletSystem.service.impl.EWalletServiceImpl;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Welcome to EWalletSystem");
         ApplicationService applicationService = new EWalletServiceImpl();
         applicationService.startApplication();
-
-
     }
 }
