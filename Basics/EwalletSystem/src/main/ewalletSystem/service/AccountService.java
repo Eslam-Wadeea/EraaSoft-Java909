@@ -11,6 +11,9 @@ public interface AccountService {
     AccountResult withdraw(Account account, double amount);
     AccountResult transferMoney(Account accountFrom ,Account accountTo ,  double amount);
     Account fetchAccountByUserName(String userName);
+    void changePassword(Account account , String newPassword);
+
+
 
 
 

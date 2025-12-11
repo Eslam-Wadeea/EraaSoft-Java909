@@ -39,22 +39,6 @@ public class AccountServiceImpl  implements AccountService {
     }
 
     @Override
-    public AccountResult deposit(Account account, double amount) {
-        Optional<Account>optionalAccount = getOptionalAccountByUserName(account);
-        if (optionalAccount.isEmpty()) {
-            return new AccountResult(1);
-        }
-
-        if (amount < 100) {
-            return new AccountResult(2);
-        }
-
-        Account accountToDeposit = optionalAccount.get();
-        accountToDeposit.setBalance(accountToDeposit.getBalance() + amount);
-        return new AccountResult(3 , accountToDeposit.getBalance());
-    }
-
-    @Override
     public AccountResult withdraw(Account account, double amount) {
         Optional<Account>optionalAccount = getOptionalAccountByUserName(account);
         if (optionalAccount.isEmpty()) {
@@ -72,34 +56,59 @@ public class AccountServiceImpl  implements AccountService {
         return new AccountResult(4 ,  accountToWithdraw.getBalance());
 
     }
+    @Override
+    public AccountResult deposit(Account account, double amount) {
+        Optional<Account>optionalAccount = getOptionalAccountByUserName(account);
+        if (optionalAccount.isEmpty()) {
+            return new AccountResult(1);
+        }
+
+        if (amount < 100) {
+            return new AccountResult(2);
+        }
+
+        Account accountToDeposit = optionalAccount.get();
+        accountToDeposit.setBalance(accountToDeposit.getBalance() + amount);
+        return new AccountResult(3 , accountToDeposit.getBalance());
+    }
 
     @Override
-    public AccountResult transferMoney(Account accountFrom ,Account accountTo ,  double amount) {
-        Optional<Account>optionalAccountFrom = getOptionalAccountByUserName(accountFrom);
-        Optional<Account>optionalAccountTo = getOptionalAccountByUserName(accountTo);
+    public AccountResult transferMoney(Account account ,Account accountTo ,  double amount) {
+        Optional<Account>optionalAccountFrom = getOptionalAccountByUserName(account);
         if (optionalAccountFrom.isEmpty()) {
             return new AccountResult(1);
         }
+        Optional<Account> optionalAccountTo = getOptionalAccountByUserName(accountTo);
         if (optionalAccountTo.isEmpty()) {
             return new AccountResult(2);
         }
-        if (amount > accountFrom.getBalance()) {
+        if (amount > account.getBalance()) {
             return new AccountResult(3);
         }
         if(amount < 100){
             return new AccountResult(4);
         }
-        accountFrom.setBalance(accountFrom.getBalance() - amount);
+        account.setBalance(account.getBalance() - amount);
         accountTo.setBalance(accountTo.getBalance() + amount);
-        return new AccountResult(5 ,accountFrom.getBalance());
+        return new AccountResult(5 ,account.getBalance());
+    }
+
+    @Override
+    public void changePassword(Account account , String  newPassword) {
+        Optional<Account> optionalAccount =eWalletSystem.getAccounts().stream()
+                .filter(acc -> acc.getUsername().equals(account.getUsername())).findFirst();
+        if (optionalAccount.isPresent()) {
+            Account accountToUpdatePassword = optionalAccount.get();
+            accountToUpdatePassword.setPassword(newPassword);
+        }
+
     }
 
     @Override
     public Account fetchAccountByUserName(String username) {
-        Optional<Account> optionalAccount = eWalletSystem.getAccounts().stream()
+        return eWalletSystem.getAccounts().stream()
                 .filter(acc -> acc.getUsername().equals(username))
-                .findFirst();
-        return optionalAccount.get();
+                .findFirst().orElse(null);
     }
 
     private Optional<Account> getOptionalAccountByUserName(Account account) {

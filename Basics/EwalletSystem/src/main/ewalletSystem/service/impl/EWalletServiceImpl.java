@@ -132,7 +132,7 @@ public class EWalletServiceImpl implements ApplicationService {
         int counter =0;
        while (true){
            System.out.println("services------->");
-           System.out.println("1.deposit      2.withdraw     3.show account details     4.transfer money    5.logout");
+           System.out.println("1.deposit      2.withdraw     3.show account details     4.transfer money       5.change password      6.logout");
            Scanner scanner  = new Scanner(System.in);
            System.out.println("please give me your service");
            int result = scanner.nextInt();
@@ -150,6 +150,9 @@ public class EWalletServiceImpl implements ApplicationService {
                    transferMoney(account);
                    break;
                case 5:
+                   changePassword(account);
+                   break;
+               case 6:
                    System.out.println("have a nice day");
                    logout = true;
                    break;
@@ -166,6 +169,7 @@ public class EWalletServiceImpl implements ApplicationService {
        }
 
     }
+
 
     private void showAccountDetails(Account account) {
         Account accountExist = accountService.getAccountByUserName(account);
@@ -207,7 +211,7 @@ public class EWalletServiceImpl implements ApplicationService {
         }
     }
 
-    private void transferMoney(Account accountFrom) {
+    private void transferMoney(Account account) {
         System.out.println("please enter account user name you want to send to ");
         Scanner scanner  = new Scanner(System.in);
         String  usernameTo = scanner.next();
@@ -216,13 +220,14 @@ public class EWalletServiceImpl implements ApplicationService {
         double amount = scanner.nextDouble();
         Account accountTo = accountService.fetchAccountByUserName(usernameTo);
 
-        AccountResult transferSuccess = accountService.transferMoney(accountFrom , accountTo , amount);
+        AccountResult transferSuccess = accountService.transferMoney(account , accountTo , amount);
         if (transferSuccess.getError() == 1) {
             System.out.println("the sender account does not exist");
         }
         else if (transferSuccess.getError() == 2) {
             System.out.println("the receiver account does not exist");
         }
+
         else if (transferSuccess.getError() == 3) {
             System.out.println("insufficient funds");
         }
@@ -232,5 +237,27 @@ public class EWalletServiceImpl implements ApplicationService {
         else if (transferSuccess.getError() == 5) {
             System.out.println("transfer successfully your balance "+ transferSuccess.getAmount());
         }
+    }
+
+    private void changePassword(Account account ) {
+        System.out.println("please enter your current password");
+        Scanner scanner = new Scanner(System.in);
+        String currentPassword = scanner.next();
+        if (!currentPassword.equals(account.getPassword())) {
+            System.out.println("wrong current password");
+            return;
+        }
+        System.out.println("please enter your new password");
+        String newPassword = scanner.next();
+        if (currentPassword.equals(newPassword)) {
+            System.out.println("same current password");
+            return;
+
+        } else if (!accountValidationService.validatePassword(newPassword)) {
+            System.out.println("invalid new password format");
+            return;
+        }
+        System.out.println("change password success");
+        accountService.changePassword(account, newPassword);
     }
 }
