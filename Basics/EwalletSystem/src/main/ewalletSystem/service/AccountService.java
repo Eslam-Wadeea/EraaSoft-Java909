@@ -9,12 +9,7 @@ public interface AccountService {
     Account getAccountByUserName(Account account);
     AccountResult deposit(Account account, double amount);
     AccountResult withdraw(Account account, double amount);
-    AccountResult transferMoney(Account accountFrom ,Account accountTo ,  double amount);
+    AccountResult transferMoney(Account accountFrom ,String usernameTo ,  double amount);
     Account fetchAccountByUserName(String userName);
     void changePassword(Account account , String newPassword);
-
-
-
-
-
 }

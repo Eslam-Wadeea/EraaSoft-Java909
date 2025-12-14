@@ -73,13 +73,13 @@ public class AccountServiceImpl  implements AccountService {
     }
 
     @Override
-    public AccountResult transferMoney(Account account ,Account accountTo ,  double amount) {
+    public AccountResult transferMoney(Account account ,String usernameTo ,  double amount) {
         Optional<Account>optionalAccountFrom = getOptionalAccountByUserName(account);
         if (optionalAccountFrom.isEmpty()) {
             return new AccountResult(1);
         }
-        Optional<Account> optionalAccountTo = getOptionalAccountByUserName(accountTo);
-        if (optionalAccountTo.isEmpty()) {
+        Account accountTo = fetchAccountByUserName(usernameTo);
+        if (accountTo==null) {
             return new AccountResult(2);
         }
         if (amount > account.getBalance()) {

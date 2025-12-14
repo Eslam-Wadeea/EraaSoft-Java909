@@ -169,8 +169,6 @@ public class EWalletServiceImpl implements ApplicationService {
        }
 
     }
-
-
     private void showAccountDetails(Account account) {
         Account accountExist = accountService.getAccountByUserName(account);
         if (Objects.isNull(accountExist)) {
@@ -218,9 +216,8 @@ public class EWalletServiceImpl implements ApplicationService {
 
         System.out.println("Please enter the amount to transfer:");
         double amount = scanner.nextDouble();
-        Account accountTo = accountService.fetchAccountByUserName(usernameTo);
 
-        AccountResult transferSuccess = accountService.transferMoney(account , accountTo , amount);
+        AccountResult transferSuccess = accountService.transferMoney(account , usernameTo , amount);
         if (transferSuccess.getError() == 1) {
             System.out.println("the sender account does not exist");
         }
