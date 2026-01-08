@@ -6,7 +6,6 @@ import main.ewalletSystem.model.EWalletSystem;
 import main.ewalletSystem.service.AccountService;
 
 import java.util.Optional;
-
 public class AccountServiceImpl  implements AccountService {
 
     private final EWalletSystem eWalletSystem = new EWalletSystem();
@@ -22,10 +21,10 @@ public class AccountServiceImpl  implements AccountService {
     }
 
     @Override
-    public boolean getAccountByUserNameAndPassword(Account account) {
+    public Account getAccountByUserNameAndPassword(Account account) {
         return eWalletSystem.getAccounts().stream()
-                        .anyMatch(acc -> acc.getUsername().equals(account.getUsername())
-                                && acc.getPassword().equals(account.getPassword()));
+                .filter(a -> a.getUsername().equals(account.getUsername())).findFirst().get();
+
     }
 
     @Override
