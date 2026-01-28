@@ -1,70 +1,69 @@
 package item.model;
 
-public class item {
-	private int id;
+public class Item {
+	private Long id;
     private String name;
-    private int price;
-    private double totalNumber;
+    private double price;
+    private int total_Number;
 
     
-    public item() {
+    public Item() {
     }
     
-    public item( String name, int price, double totalNumber) {
+    public Item( String name, double price, int totalNumber) {
         this.name = name;
         this.price = price;
-        this.totalNumber = totalNumber;
+        this.total_Number = totalNumber;
     }
         
-    public item(int id, String name, int price, double totalNumber) {
+    public Item(Long id, String name, double price, int totalNumber) {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.totalNumber = totalNumber;
+        this.total_Number = totalNumber;
     }
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public int getTotalNumber() {
+		return total_Number;
+	}
+
+	public void setTotalNumber(int totalNumber) {
+		this.total_Number = totalNumber;
+	}
+
+	@Override
+	public String toString() {
+		return "Item [id=" + id + ", name=" + name + ", price=" + price + ", totalNumber=" + total_Number + "]";
+	}
+    
+    
 
     
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public double getTotalNumber() {
-        return totalNumber;
-    }
-
-    public void setTotalNumber(double totalNumber) {
-        this.totalNumber = totalNumber;
-    }
-
-    @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                ", totalNumber=" + totalNumber +
-                '}';
-    }
+    
 	
 
 }

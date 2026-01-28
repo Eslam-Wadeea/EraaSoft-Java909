@@ -1,16 +1,26 @@
 package item.controller;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
+
+import item.model.Item;
+import item.service.itemService;
+import item.service.impl.itemServiceImpl;
 
 @WebServlet("/itemController")
 public class itemController extends HttpServlet {
+	
+	@Resource(name = "jdbc/connection")
+	private DataSource dataSource;
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
@@ -58,10 +68,14 @@ public class itemController extends HttpServlet {
 	
 	private void showItems(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			response.getWriter().append("<h1>showItems</h1>");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			itemService itemService = new itemServiceImpl(dataSource);
+			List<Item> items = itemService.getItems(); // 
+			
+			request.setAttribute("allItems", items);
+			
+			request.getRequestDispatcher("/show-items.jsp").forward(request, response);
+		} catch (Exception e) {
+			System.out.println("ex => " + e.getMessage());
 		}
 		
 	}
@@ -69,22 +83,36 @@ public class itemController extends HttpServlet {
 
 	private void showItem(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			response.getWriter().append("<h1>showItem</h1>");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			itemService itemService = new itemServiceImpl(dataSource);
+			
+			Long id = Long.parseLong(request.getParameter("id"));
+			Item item = itemService.getItem(id);
+			
+			
+		} catch (Exception e) {
+			System.out.println("ex => " + e.getMessage());
 		}
-		
-		
+
 	}
 
 
 	private void updateItem(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			response.getWriter().append("<h1>updateItem</h1>");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			itemService itemService = new itemServiceImpl(dataSource);
+			
+			Long id = Long.parseLong(request.getParameter("id"));
+			String name = request.getParameter("name");
+			Double price = Double.parseDouble(request.getParameter("price"));
+			Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+			
+			Item item = new Item(id, name, price, totalNumber);
+			Boolean isItemUpdated = itemService.updateItem(item);
+			
+			if (isItemUpdated) {
+				response.getWriter().append("<h1>update Success</h1>"); 
+			}
+		} catch (Exception e) {
+			System.out.println("ex => " + e.getMessage());
 		}
 		
 		
@@ -93,10 +121,17 @@ public class itemController extends HttpServlet {
 
 	private void removeItem(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			response.getWriter().append("<h1>removeItem</h1>");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			itemService itemService = new itemServiceImpl(dataSource);
+			
+			Long id = Long.parseLong(request.getParameter("id"));
+			
+			Boolean isItemDeleted = itemService.removeItem(id);
+			
+			if (isItemDeleted) {
+				showItems(request, response);
+			}
+		} catch (Exception e) {
+			System.out.println("ex => " + e.getMessage());
 		}
 		
 		
@@ -105,10 +140,22 @@ public class itemController extends HttpServlet {
 
 	private void addItem(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			response.getWriter().append("<h1>addItem</h1>");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			itemService itemService = new itemServiceImpl(dataSource);
+			
+			String name = request.getParameter("name");
+			Double price = Double.parseDouble(request.getParameter("price"));
+			Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+			
+			// TODO solve if name exist getItemByName
+			
+			Item item = new Item(name, price, totalNumber);
+			Boolean isItemCreated = itemService.createItem(item);
+			
+			if (isItemCreated) {
+				showItems(request, response);
+			}
+		} catch (Exception e) {
+			System.out.println("ex => " + e.getMessage());
 		}
 		
 		
