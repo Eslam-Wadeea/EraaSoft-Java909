@@ -5,6 +5,8 @@ public class Item {
     private String name;
     private double price;
     private int total_Number;
+    private int is_deleted;
+    
 
     
     public Item() {
@@ -53,6 +55,14 @@ public class Item {
 
 	public void setTotalNumber(int totalNumber) {
 		this.total_Number = totalNumber;
+	}
+	
+	public int getIs_deleted() {
+		return is_deleted;
+	}
+
+	public void setIs_deleted(int is_deleted) {
+		this.is_deleted = is_deleted;
 	}
 
 	@Override

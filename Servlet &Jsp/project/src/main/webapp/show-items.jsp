@@ -291,8 +291,9 @@ tbody tr:nth-child(n+4) { animation-delay: 0.4s; }
 	            <td><%=item.getPrice() %></td>
 	            <td><%=item.getTotalNumber() %></td>
 	            <td>
-	                <a>Update</a>
-	                <a href="/project/ItemController?action=remove-item&id=<%=item.getId()%>">Delete</a>
+	                <a href="/project/itemController?action=show-item&id=<%=item.getId()%>">Update</a>
+	                <a href="/project/itemController?action=remove-item&id=<%=item.getId()%>" 
+   						onclick="alert('Item deleted successfully!')">Delete</a>
 	            </td>
 	        </tr>
         <% } %>
@@ -301,10 +302,14 @@ tbody tr:nth-child(n+4) { animation-delay: 0.4s; }
     </table>
 
 
-    <button class="f"><a href="./add-item.html" >Add Item</a></button>
+    <button class="f"><a href="./add-item.jsp" >Add Item</a></button>
 
 
 </div>
+<c:if test="${not empty sessionScope.successMessage}">
+    <script>alert("${sessionScope.successMessage}");</script>
+    <% session.removeAttribute("successMessage"); %>
+</c:if>
 
 </body>
 </html>

@@ -62,6 +62,10 @@ public class itemController extends HttpServlet {
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String action = request.getParameter("action");
+	    if ("add-item".equals(action)) {
+	        addItem(request, response);
+	    }
 		
 	}
 
@@ -69,11 +73,11 @@ public class itemController extends HttpServlet {
 	private void showItems(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			itemService itemService = new itemServiceImpl(dataSource);
-			List<Item> items = itemService.getItems(); // 
+			List<Item> items = itemService.getItems();  
 			
 			request.setAttribute("allItems", items);
 			
-			request.getRequestDispatcher("/show-items.jsp").forward(request, response);
+			request.getRequestDispatcher("show-items.jsp").forward(request, response);
 		} catch (Exception e) {
 			System.out.println("ex => " + e.getMessage());
 		}
@@ -87,6 +91,9 @@ public class itemController extends HttpServlet {
 			
 			Long id = Long.parseLong(request.getParameter("id"));
 			Item item = itemService.getItem(id);
+			request.setAttribute("item", item);
+			
+			request.getRequestDispatcher("update-item.jsp").forward(request, response);
 			
 			
 		} catch (Exception e) {
@@ -109,7 +116,11 @@ public class itemController extends HttpServlet {
 			Boolean isItemUpdated = itemService.updateItem(item);
 			
 			if (isItemUpdated) {
-				response.getWriter().append("<h1>update Success</h1>"); 
+				request.setAttribute("successMessage", "Item updated successfully!");
+				showItems(request, response); 
+			}else {
+				request.setAttribute("errorMessage", "Name already exists for another item!");
+				request.getRequestDispatcher("update-item.jsp").forward(request, response);
 			}
 		} catch (Exception e) {
 			System.out.println("ex => " + e.getMessage());
@@ -158,10 +169,12 @@ public class itemController extends HttpServlet {
 			System.out.println("ex => " + e.getMessage());
 		}
 		
+	}
+		
 		
 	}
 
 
 	
 
-}
+

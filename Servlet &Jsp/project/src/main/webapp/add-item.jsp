@@ -372,7 +372,7 @@ form {
   <div class="text">
     Add Item
   </div>
-  <form action="/item-service-909/ItemController">
+  <form action="/project/itemController">
     <div class="form-row">
       <div class="input-data">
         <input type="text" required name="name">
@@ -399,7 +399,7 @@ form {
   </form>
 
   <p class="back">
-    <a href="" >Back To Items</a>
+    <a href="/project/itemController" >Back To Items</a>
   </p>
 </div>
 <!-- partial -->
