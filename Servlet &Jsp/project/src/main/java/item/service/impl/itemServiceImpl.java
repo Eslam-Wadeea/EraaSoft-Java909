@@ -33,7 +33,7 @@ public class itemServiceImpl implements itemService {
 			connection = dataSource.getConnection();  // connection open
 			statement = connection.createStatement(); // statement open
 			
-			String query = "SELECT ID, NAME, PRICE, TOTAL_NUMBER FROM DIP.ITEM WHERE IS_DELETED = 0";
+			String query = "SELECT ID, NAME, PRICE, TOTAL_NUMBER FROM DIP.ITEM WHERE IS_DELETED = 0 ORDER BY ID";
 			ResultSet resultSet = statement.executeQuery(query);
 			
 			List<Item> items = new ArrayList<Item>();
@@ -144,9 +144,7 @@ public class itemServiceImpl implements itemService {
 	@Override
 	public boolean updateItem(Item item) {
 		
-		if (isNameDuplicateForOtherId(item.getName(), item.getId())) {
-	        return false; 
-	    }
+		
 	    Connection connection = null;
 	    PreparedStatement pstmt = null;
 
@@ -216,32 +214,40 @@ public class itemServiceImpl implements itemService {
 		return null;
 	}
 	
-	private boolean isNameExists(String name) {
-	    String query = "SELECT COUNT(*) FROM DIP.ITEM WHERE NAME = ? AND IS_DELETED = 0";
-	    try (Connection conn = dataSource.getConnection();
-	         PreparedStatement pstmt = conn.prepareStatement(query)) {
+	public boolean isNameExists(String name) {
+	    try (Connection connection = dataSource.getConnection();
+	         Statement statement = connection.createStatement()) {
+	        
+	        String query = "SELECT COUNT(*) FROM DIP.ITEM WHERE NAME = '" + name + "' AND IS_DELETED = 0";
+	        ResultSet rs = statement.executeQuery(query);
+	        if (rs.next()) {
+	            return rs.getInt(1) > 0;
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("ex => " + e.getMessage());
+	    }
+	    return false;
+	}
+	public boolean isNameExistsForOtherId(String name, Long currentId) {
+	    // We check for the name but EXCLUDE the current ID
+	    String query = "SELECT COUNT(*) FROM DIP.ITEM WHERE NAME = ? AND ID != ? AND IS_DELETED = 0";
+	    
+	    try (Connection connection = dataSource.getConnection();
+	         PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        
+	        // Bind the parameters to the ? placeholders
 	        pstmt.setString(1, name);
+	        pstmt.setLong(2, currentId);
+	        
 	        try (ResultSet rs = pstmt.executeQuery()) {
 	            if (rs.next()) {
+	                // If count > 0, the name is already taken by someone else
 	                return rs.getInt(1) > 0;
 	            }
 	        }
 	    } catch (SQLException e) {
-	        e.printStackTrace();
+	        System.out.println("Database Error (isNameExistsForOtherId): " + e.getMessage());
 	    }
-	    return false;
-	}
-	
-	private boolean isNameDuplicateForOtherId(String name, Long id) {
-	    String sql = "SELECT COUNT(*) FROM DIP.ITEM WHERE NAME = ? AND ID != ? AND IS_DELETED = 0";
-	    try (Connection conn = dataSource.getConnection();
-	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
-	        pstmt.setString(1, name);
-	        pstmt.setLong(2, id);
-	        try (ResultSet rs = pstmt.executeQuery()) {
-	            if (rs.next()) return rs.getInt(1) > 0;
-	        }
-	    } catch (SQLException e) { e.printStackTrace(); }
 	    return false;
 	}
 	

@@ -372,7 +372,7 @@ form {
   <div class="text">
     Add Item
   </div>
-  <form action="/project/itemController">
+  <form action="/project/itemController" id="itemForm" method="POST">
     <div class="form-row">
       <div class="input-data">
         <input type="text" required name="name">
@@ -395,14 +395,50 @@ form {
     </div>
     
     <input type="hidden" required name="action" value="add-item">
-    <input type="submit" value="Add" class="button">
+    <input type="button" value="Add" class="button" onclick="validateAndSubmit()">
   </form>
 
   <p class="back">
-    <a href="/project/itemController" >Back To Items</a>
+    <a href="/project/itemController">&larr; Back To Items</a>
   </p>
 </div>
 <!-- partial -->
+<script>
+    // 1. This runs AFTER the server processes the request
+    window.onload = function() {
+        var status = "<%= request.getAttribute("status") != null ? request.getAttribute("status") : "" %>";
+        if (status === "success") {
+            alert("Item added successfully!");
+            window.location.href = "itemController"; // Redirect to list
+        } else if (status === "duplicate") {
+            alert("Error: This item name already exists!");
+        }
+    };
+
+    // 2. This runs BEFORE the form is sent to the server
+    function validateAndSubmit() {
+        const name = document.getElementsByName("name")[0].value.trim();
+        const price = document.getElementsByName("price")[0].value.trim();
+        const total = document.getElementsByName("totalNumber")[0].value.trim();
+
+        // Combined Validation
+        if (name === "") {
+            alert("Please enter a valid Name.");
+            return;
+        }
+        if (price === "" || isNaN(price) || parseFloat(price) <= 0) {
+            alert("Please enter a valid Price greater than 0.");
+            return;
+        }
+        if (total === "" || isNaN(total) || parseInt(total) <= 0) {
+            alert("Please enter a valid Total Number (at least 1).");
+            return;
+        }
+
+        // If validation passes, submit to the Controller to check for duplicates
+        document.getElementById("itemForm").submit();
+    }
+</script>
 
 </body>
 </html>

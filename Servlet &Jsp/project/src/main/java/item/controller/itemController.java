@@ -62,10 +62,7 @@ public class itemController extends HttpServlet {
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String action = request.getParameter("action");
-	    if ("add-item".equals(action)) {
-	        addItem(request, response);
-	    }
+		doGet(request, response);
 		
 	}
 
@@ -104,29 +101,30 @@ public class itemController extends HttpServlet {
 
 
 	private void updateItem(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			itemService itemService = new itemServiceImpl(dataSource);
-			
-			Long id = Long.parseLong(request.getParameter("id"));
-			String name = request.getParameter("name");
-			Double price = Double.parseDouble(request.getParameter("price"));
-			Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
-			
-			Item item = new Item(id, name, price, totalNumber);
-			Boolean isItemUpdated = itemService.updateItem(item);
-			
-			if (isItemUpdated) {
-				request.setAttribute("successMessage", "Item updated successfully!");
-				showItems(request, response); 
-			}else {
-				request.setAttribute("errorMessage", "Name already exists for another item!");
-				request.getRequestDispatcher("update-item.jsp").forward(request, response);
-			}
-		} catch (Exception e) {
-			System.out.println("ex => " + e.getMessage());
-		}
-		
-		
+	    try {
+	        itemService itemService = new itemServiceImpl(dataSource);
+	        long id = Long.parseLong(request.getParameter("id"));
+	        String name = request.getParameter("name");
+	        Double price = Double.parseDouble(request.getParameter("price"));
+	        Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+
+	        // 1. Check for duplicates (excluding this item's own ID)
+	        if (itemService.isNameExistsForOtherId(name, id)) {
+	            request.setAttribute("status", "duplicate");
+	            updateItem(request, response); 
+	            return; // Stop here if it's a duplicate
+	        }
+
+	        // 2. Perform the update
+	        Item item = new Item(id, name, price, totalNumber);
+	        if (itemService.updateItem(item)) {
+	            request.setAttribute("status", "updateSuccess");
+	            // Forward back to update-item.jsp to trigger the success popup
+	            request.getRequestDispatcher("update-item.jsp").forward(request, response);
+	        }
+	    } catch (Exception e) {
+	        System.out.println("Update Error: " + e.getMessage());
+	    }
 	}
 
 
@@ -150,25 +148,29 @@ public class itemController extends HttpServlet {
 
 
 	private void addItem(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			itemService itemService = new itemServiceImpl(dataSource);
-			
-			String name = request.getParameter("name");
-			Double price = Double.parseDouble(request.getParameter("price"));
-			Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
-			
-			// TODO solve if name exist getItemByName
-			
-			Item item = new Item(name, price, totalNumber);
-			Boolean isItemCreated = itemService.createItem(item);
-			
-			if (isItemCreated) {
-				showItems(request, response);
-			}
-		} catch (Exception e) {
-			System.out.println("ex => " + e.getMessage());
-		}
-		
+	    try {
+	        itemService itemService = new itemServiceImpl(dataSource);
+	        String name = request.getParameter("name");
+	        
+	        // 1. Check for duplicates
+	        if (itemService.isNameExists(name)) { // You must implement this in ServiceImpl
+	            request.setAttribute("status", "duplicate");
+	            request.getRequestDispatcher("add-item.jsp").forward(request, response);
+	            return;
+	        }
+
+	        // 2. Existing logic to create item
+	        Double price = Double.parseDouble(request.getParameter("price"));
+	        Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+	        Item item = new Item(name, price, totalNumber);
+	        
+	        if (itemService.createItem(item)) {
+	            request.setAttribute("status", "success");
+	            request.getRequestDispatcher("add-item.jsp").forward(request, response);
+	        }
+	    } catch (Exception e) {
+	        System.out.println("ex => " + e.getMessage());
+	    }
 	}
 		
 		

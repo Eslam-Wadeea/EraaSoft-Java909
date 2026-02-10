@@ -306,10 +306,5 @@ tbody tr:nth-child(n+4) { animation-delay: 0.4s; }
 
 
 </div>
-<c:if test="${not empty sessionScope.successMessage}">
-    <script>alert("${sessionScope.successMessage}");</script>
-    <% session.removeAttribute("successMessage"); %>
-</c:if>
-
 </body>
 </html>

@@ -382,7 +382,7 @@ form {
   <div class="text">
     Update Item
   </div>
-  <form action="/project/itemController">
+  <form action="/project/itemController" id="updateForm" method="POST">
     <div class="form-row">
       
       <div class="input-data">
@@ -409,20 +409,41 @@ form {
     
     
     
-    <input type="submit" value="Update" class="button" >
+    <input type="button" value="update" class="button" onclick="validateAndUpdate()">
   </form>
 
   <p class="back">
-    <a href="itemController" >Back To Items</a>
+    <a href="/project/itemController">&larr; Back To Items</a>
   </p>
   
 </div>
 <!-- partial -->
-<c:if test="${not empty errorMessage}">
-    <script type="text/javascript">
-        alert("${errorMessage}");
-    </script>
-</c:if>
+<script>
+    // 1. Post-Submission Feedback (Server -> Client)
+    window.onload = function() {
+        var status = "<%= request.getAttribute("status") != null ? request.getAttribute("status") : "" %>";
+        if (status === "updateSuccess") {
+            alert("Item updated successfully!");
+            window.location.href = "itemController"; // Redirect to list after clicking OK
+        } else if (status === "duplicate") {
+            alert("Error: This name is already taken by another item!");
+        }
+    };
 
+    // 2. Pre-Submission Validation (Client-side)
+    function validateAndUpdate() {
+        const name = document.getElementsByName("name")[0].value.trim();
+        const price = document.getElementsByName("price")[0].value;
+        const total = document.getElementsByName("totalNumber")[0].value;
+
+        if (name === "" || price <= 0 || total <= 0) {
+            alert("Please provide a valid Name, Price (>0), and Total Number (>0).");
+            return;
+        }
+
+        // Only submit if validation passes
+        document.getElementById("updateForm").submit();
+    }
+</script>
 </body>
 </html>

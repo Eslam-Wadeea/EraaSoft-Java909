@@ -12,6 +12,8 @@ public interface itemService {
 	boolean createItem(Item item);
 	boolean updateItem(Item item);
 	boolean removeItem(Long id);
+	boolean isNameExists(String name);
+	boolean isNameExistsForOtherId(String name, Long currentId);
 	
 	
 
