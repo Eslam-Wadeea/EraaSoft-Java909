@@ -1,11 +1,18 @@
 package item.model;
 
+import java.util.Date;
+
 public class Item {
 	private Long id;
     private String name;
     private double price;
     private int total_Number;
     private int is_deleted;
+    private String description; 
+    private Date expiryDate;
+    private Date issueDate;
+    
+    
     
 
     
@@ -29,8 +36,8 @@ public class Item {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(long i) {
+		this.id = i;
 	}
 
 	public String getName() {
@@ -63,6 +70,32 @@ public class Item {
 
 	public void setIs_deleted(int is_deleted) {
 		this.is_deleted = is_deleted;
+	}
+	
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Date getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(Date expiryDate) {
+		this.expiryDate = expiryDate;
+	}
+	
+
+	public Date getIssueDate() {
+		return issueDate;
+	}
+
+	public void setIssueDate(Date issueDate) {
+		this.issueDate = issueDate;
 	}
 
 	@Override

@@ -26,45 +26,34 @@ public class itemServiceImpl implements itemService {
 
 	@Override
 	public List<Item> getItems() {
-		Connection connection = null;
-		Statement statement = null;
-		
-		try {
-			connection = dataSource.getConnection();  // connection open
-			statement = connection.createStatement(); // statement open
-			
-			String query = "SELECT ID, NAME, PRICE, TOTAL_NUMBER FROM DIP.ITEM WHERE IS_DELETED = 0 ORDER BY ID";
-			ResultSet resultSet = statement.executeQuery(query);
-			
-			List<Item> items = new ArrayList<Item>();
-			while (resultSet.next()) {
-				Item item = new Item(
-						resultSet.getLong("id"),
-						resultSet.getString("name"),
-						resultSet.getDouble("price"),
-						resultSet.getInt("total_Number")
-				);
-				items.add(item);
-			}
-			
-			return items;
-		} catch (Exception exception) {
-			System.out.println("ex => " + exception.getMessage());
-		} finally {
-			try {
-				if(Objects.nonNull(connection)) {
-					connection.close();
-				}
-				
-				if(Objects.nonNull(statement)) {
-					statement.close();
-				}
-			} catch (SQLException exception) {
-				System.out.println("ex => " + exception.getMessage());
-			}
-		}
-		
-		return null;
+		List<Item> list = new ArrayList<>();
+	    // استخدام LEFT JOIN لضمان ظهور المنتجات حتى لو لم يكن لها تفاصيل بعد
+	    String sql = "SELECT i.ID, i.NAME, i.PRICE, i.TOTAL_NUMBER, d.DESCRIPTION, d.EXPIRY_DATE " +
+	                 "FROM DIP.ITEM i " +
+	                 "LEFT JOIN DIP.ITEM_DETAILS d ON i.ID = d.ITEM_ID " +
+	                 "WHERE i.IS_DELETED = 0"; // المهمة 10 من المستوى الأول
+
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+
+	        while (rs.next()) {
+	            Item item = new Item();
+	            item.setId(rs.getInt("ID"));
+	            item.setName(rs.getString("NAME"));
+	            item.setPrice(rs.getDouble("PRICE"));
+	            item.setTotalNumber(rs.getInt("TOTAL_NUMBER"));
+	            
+	            // قراءة البيانات الجديدة من نتيجة الاستعلام
+	            item.setDescription(rs.getString("DESCRIPTION"));
+	            item.setExpiryDate(rs.getDate("EXPIRY_DATE"));
+	            
+	            list.add(item);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return list;
 	}
 	
 
@@ -109,36 +98,63 @@ public class itemServiceImpl implements itemService {
 
 	@Override
 	public boolean createItem(Item item) {
-		Connection connection = null;
-		Statement statement = null;
-		
-		try {
-			connection = dataSource.getConnection();  // connection open
-			statement = connection.createStatement(); // statement open
-			
-			String query = "INSERT INTO DIP.ITEM (NAME, PRICE, TOTAL_NUMBER , IS_DELETED) VALUES('" + 
-								item.getName() + "', " + item.getPrice() +", " + item.getTotalNumber() + " , 0)";
-			
-			statement.execute(query);
-			
-			return true;
-		} catch (Exception exception) {
-			System.out.println("ex => " + exception.getMessage());
-		} finally {
-			try {
-				if(Objects.nonNull(connection)) {
-					connection.close();
-				}
-				
-				if(Objects.nonNull(statement)) {
-					statement.close();
-				}
-			} catch (SQLException exception) {
-				System.out.println("ex => " + exception.getMessage());
-			}
-		}
-		
-		return false;
+	    boolean isSaved = false;
+	    // الاستعلام الأول للجدول الأساسي
+	    String sqlItem = "INSERT INTO DIP.ITEM (NAME, PRICE, TOTAL_NUMBER, IS_DELETED) VALUES (?, ?, ?, 0)";
+	    String sqlDetails = "INSERT INTO DIP.ITEM_DETAILS (ID, DESCRIPTION, ISSUE_DATE, EXPIRY_DATE, ITEM_ID) VALUES (DIP.SEQ_DETAILS.NEXTVAL, ?, SYSDATE, ?, ?)";
+	    try (Connection conn = dataSource.getConnection()) {
+	        // 1. بدء الـ Transaction يدوياً
+	        conn.setAutoCommit(false); 
+
+	        try (PreparedStatement ps1 = conn.prepareStatement(sqlItem, new String[]{"ID"})) {
+	            ps1.setString(1, item.getName());
+	            ps1.setDouble(2, item.getPrice());
+	            ps1.setInt(3, item.getTotalNumber());
+	            
+	            int rows1 = ps1.executeUpdate();
+
+	            // 2. التحقق من نجاح الإدخال الأول والحصول على الـ ID المولد
+	            if (rows1 > 0) {
+	                ResultSet rs = ps1.getGeneratedKeys();
+	                if (rs.next()) {
+	                    int generatedItemId = rs.getInt(1);
+
+	                    try (PreparedStatement ps2 = conn.prepareStatement(sqlDetails)) {
+	                        ps2.setString(1, item.getDescription());
+	                        
+	                        // معالجة التاريخ لمنع خطأ الـ Null الذي ظهر لك في الكونسول
+	                        if (item.getExpiryDate() != null) {
+	                            ps2.setDate(2, new java.sql.Date(item.getExpiryDate().getTime()));
+	                        } else {
+	                            ps2.setNull(2, java.sql.Types.DATE);
+	                        }
+	                        
+	                        ps2.setInt(3, generatedItemId); // الربط عبر الـ Foreign Key
+	                        
+	                        int rows2 = ps2.executeUpdate();
+	                        
+	                        // 3. إذا نجح الحفظ في الجدولين، نقوم بالـ Commit
+	                        if (rows2 > 0) {
+	                            conn.commit(); 
+	                            isSaved = true;
+	                        }
+	                    }
+	                }
+	            }
+	            
+	            // 4. إذا فشل أي جزء، نقوم بعمل تراجع (Rollback)
+	            if (!isSaved) {
+	                conn.rollback();
+	            }
+
+	        } catch (SQLException e) {
+	            conn.rollback();
+	            System.err.println("SQL Error: " + e.getMessage());
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return isSaved;
 	}
 
 	@Override

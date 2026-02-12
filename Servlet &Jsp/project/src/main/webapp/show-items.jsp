@@ -269,37 +269,42 @@ tbody tr:nth-child(n+4) { animation-delay: 0.4s; }
 <body>
 <div class="layer">
     <table>
-        <h1>Items</h1>
-        <thead>
+    <thead>
         <tr>
             <th>ID</th>
             <th>NAME</th>
             <th>PRICE</th>
             <th>TOTAL_NUMBER</th>
-            <th>Action</th>
+            <th>DESCRIPTION</th> <th>EXPIRY DATE</th> <th>Action</th>
         </tr>
-        </thead>
-        <tbody>
-        <%
-        	List<Item> items = (List<Item>) request.getAttribute("allItems");
-        
-        	for(Item item : items){
+    </thead>
+    <tbody>
+        <% 
+        List<Item> items = (List<Item>) request.getAttribute("allItems");
+        if(items != null) {
+            for(Item item : items) { 
         %>
-	        <tr>
-	            <td><%=item.getId() %></td>
-	            <td><%=item.getName() %></td>
-	            <td><%=item.getPrice() %></td>
-	            <td><%=item.getTotalNumber() %></td>
-	            <td>
-	                <a href="/project/itemController?action=show-item&id=<%=item.getId()%>">Update</a>
-	                <a href="/project/itemController?action=remove-item&id=<%=item.getId()%>" 
-   						onclick="alert('Item deleted successfully!')">Delete</a>
-	            </td>
-	        </tr>
-        <% } %>
-        
-        </tbody>
-    </table>
+            <tr>
+                <td><%=item.getId() %></td>
+                <td><%=item.getName() %></td>
+                <td><%=item.getPrice() %></td>
+                <td><%=item.getTotalNumber() %></td>
+                
+                <td><%= (item.getDescription() != null) ? item.getDescription() : "No Desc" %></td>
+                <td><%= (item.getExpiryDate() != null) ? item.getExpiryDate() : "N/A" %></td>
+                
+                <td>
+                    <a href="/project/itemController?action=show-item&id=<%=item.getId()%>">Update</a>
+                    <a href="/project/itemController?action=remove-item&id=<%=item.getId()%>" 
+                       onclick="alert('Item deleted successfully!')">Delete</a>
+                </td>
+            </tr>
+        <% 
+            }
+        } 
+        %>
+    </tbody>
+</table>
 
 
     <button class="f"><a href="./add-item.jsp" >Add Item</a></button>

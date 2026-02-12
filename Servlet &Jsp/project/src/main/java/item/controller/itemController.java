@@ -1,6 +1,7 @@
 package item.controller;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
 
@@ -147,29 +148,40 @@ public class itemController extends HttpServlet {
 	}
 
 
-	private void addItem(HttpServletRequest request, HttpServletResponse response) {
+	private void addItem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    try {
-	        itemService itemService = new itemServiceImpl(dataSource);
+	        // 1. استقبال البيانات الأساسية
 	        String name = request.getParameter("name");
-	        
-	        // 1. Check for duplicates
-	        if (itemService.isNameExists(name)) { // You must implement this in ServiceImpl
-	            request.setAttribute("status", "duplicate");
-	            request.getRequestDispatcher("add-item.jsp").forward(request, response);
-	            return;
+	        double price = Double.parseDouble(request.getParameter("price"));
+	        int totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+	        String desc = request.getParameter("Description");
+	        String expiryStr = request.getParameter("Expiry_date");
+
+	        // 2. إنشاء الكائن (Object Instance)
+	        Item item = new Item(name, price, totalNumber);
+	        item.setDescription(desc);
+
+	        // 3. تحويل وتعيين التاريخ (الحل لخطأ الـ Static)
+	        if (expiryStr != null && !expiryStr.isEmpty()) {
+	            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	            item.setExpiryDate(sdf.parse(expiryStr)); // الاستدعاء على الكائن 'item'
 	        }
 
-	        // 2. Existing logic to create item
-	        Double price = Double.parseDouble(request.getParameter("price"));
-	        Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
-	        Item item = new Item(name, price, totalNumber);
-	        
-	        if (itemService.createItem(item)) {
+	        // 4. التحقق من التكرار والحفظ (Returning Boolean)
+	        itemServiceImpl itemService = new itemServiceImpl(dataSource);
+	        if (itemService.isNameExists(name)) {
+	            request.setAttribute("status", "duplicate");
+	        } else if (itemService.createItem(item)) { // ترجع true إذا تم الحفظ في الجدولين
 	            request.setAttribute("status", "success");
-	            request.getRequestDispatcher("add-item.jsp").forward(request, response);
+	        } else {
+	            request.setAttribute("status", "error");
 	        }
+
+	        request.getRequestDispatcher("add-item.jsp").forward(request, response);
+
 	    } catch (Exception e) {
 	        System.out.println("ex => " + e.getMessage());
+	        response.sendRedirect("error.jsp");
 	    }
 	}
 		

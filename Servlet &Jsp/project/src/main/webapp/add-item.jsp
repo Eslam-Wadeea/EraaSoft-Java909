@@ -384,12 +384,25 @@ form {
         <div class="underline"></div>
         <label>PRICE</label>
       </div>
-    </div>
-    <div class="form-row">
       <div class="input-data">
         <input type="text" required name="totalNumber">
         <div class="underline"></div>
         <label>TOTAL_NUMBER</label>
+      </div>
+      <div class="input-data">
+        <input type="text" required name="Description">
+        <div class="underline"></div>
+        <label>Description</label>
+      </div>
+      <div class="input-data">
+        <input type="date" required name="Issue_date">
+        <div class="underline"></div>
+        <label>Issue_date</label>
+      </div>
+      <div class="input-data">
+        <input type="date" required name="Expiry_date">
+        <div class="underline"></div>
+        <label>Expiry_date</label>
       </div>
 
     </div>
