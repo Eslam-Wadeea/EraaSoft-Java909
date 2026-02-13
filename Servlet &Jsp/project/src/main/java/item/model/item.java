@@ -19,7 +19,28 @@ public class Item {
     public Item() {
     }
     
-    public Item( String name, double price, int totalNumber) {
+    
+    public Item(String name, double price, int total_Number, String description, Date expiryDate) {
+		super();
+		this.name = name;
+		this.price = price;
+		this.total_Number = total_Number;
+		this.description = description;
+		this.expiryDate = expiryDate;
+	}
+    
+
+
+	public Item(String name, double price, int total_Number, String description) {
+		super();
+		this.name = name;
+		this.price = price;
+		this.total_Number = total_Number;
+		this.description = description;
+	}
+
+
+	public Item( String name, double price, int totalNumber) {
         this.name = name;
         this.price = price;
         this.total_Number = totalNumber;

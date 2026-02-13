@@ -101,30 +101,38 @@ public class itemController extends HttpServlet {
 	}
 
 
-	private void updateItem(HttpServletRequest request, HttpServletResponse response) {
+	private void updateItem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    try {
-	        itemService itemService = new itemServiceImpl(dataSource);
+	        // 1. Get Parameters (Check case sensitivity)
 	        long id = Long.parseLong(request.getParameter("id"));
 	        String name = request.getParameter("name");
-	        Double price = Double.parseDouble(request.getParameter("price"));
-	        Integer totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+	        double price = Double.parseDouble(request.getParameter("price"));
+	        int totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
+	        String desc = request.getParameter("description");
+	        String expiryStr = request.getParameter("expiry_date"); // Matches JSP
 
-	        // 1. Check for duplicates (excluding this item's own ID)
-	        if (itemService.isNameExistsForOtherId(name, id)) {
-	            request.setAttribute("status", "duplicate");
-	            updateItem(request, response); 
-	            return; // Stop here if it's a duplicate
+	        // 2. Build Object
+	        Item item = new Item(name, price, totalNumber , desc);
+	        item.setId(id);
+	        item.setDescription(desc);
+
+	        if (expiryStr != null && !expiryStr.isEmpty()) {
+	            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	            item.setExpiryDate(sdf.parse(expiryStr));
 	        }
 
-	        // 2. Perform the update
-	        Item item = new Item(id, name, price, totalNumber);
+	        // 3. Update via Service
+	        itemServiceImpl itemService = new itemServiceImpl(dataSource);
 	        if (itemService.updateItem(item)) {
-	            request.setAttribute("status", "updateSuccess");
-	            // Forward back to update-item.jsp to trigger the success popup
-	            request.getRequestDispatcher("update-item.jsp").forward(request, response);
+	            request.setAttribute("status", "success");
+	        } else {
+	            request.setAttribute("status", "error");
 	        }
+
+	        response.sendRedirect("itemController");
 	    } catch (Exception e) {
-	        System.out.println("Update Error: " + e.getMessage());
+	        e.printStackTrace();
+	        response.sendRedirect("error.jsp");
 	    }
 	}
 

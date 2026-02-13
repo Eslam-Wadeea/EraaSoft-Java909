@@ -159,39 +159,61 @@ public class itemServiceImpl implements itemService {
 
 	@Override
 	public boolean updateItem(Item item) {
-		
-		
-	    Connection connection = null;
-	    PreparedStatement pstmt = null;
-
+	    boolean isSaved = false;
+	    // Query 1: Updates name, price, and total number in the main table
+	    String sqlItem = "UPDATE DIP.ITEM SET NAME = ?, PRICE = ?, TOTAL_NUMBER = ? WHERE ID = ?";
 	    
-	    String query = "UPDATE DIP.ITEM SET NAME = ?, PRICE = ?, TOTAL_NUMBER = ? WHERE ID = ?";
+	    // Query 2: Updates description and expiry date in the details table
+	    String sqlDetails = "UPDATE DIP.ITEM_DETAILS SET DESCRIPTION = ?, EXPIRY_DATE = ? WHERE ITEM_ID = ?";
 
-	    try {
-	        connection = dataSource.getConnection();
-	        pstmt = connection.prepareStatement(query);
+	    try (Connection conn = dataSource.getConnection()) {
+	        // 1. Start Transaction manually to ensure both tables update or none do
+	        conn.setAutoCommit(false); 
 
-	        
-	        pstmt.setString(1, item.getName());
-	        pstmt.setDouble(2, item.getPrice());
-	        pstmt.setInt(3, item.getTotalNumber());
-	        pstmt.setFloat(4, item.getId());
+	        try (PreparedStatement ps1 = conn.prepareStatement(sqlItem)) {
+	            ps1.setString(1, item.getName());
+	            ps1.setDouble(2, item.getPrice());
+	            ps1.setInt(3, item.getTotalNumber());
+	            ps1.setLong(4, item.getId());
+	            
+	            int rows1 = ps1.executeUpdate();
 
-	        int rowsAffected = pstmt.executeUpdate();
-	        return rowsAffected > 0;
+	            if (rows1 > 0) {
+	                try (PreparedStatement ps2 = conn.prepareStatement(sqlDetails)) {
+	                    ps2.setString(1, item.getDescription());
+	                    
+	                    // Handle Date: Convert java.util.Date to java.sql.Date
+	                    if (item.getExpiryDate() != null) {
+	                        ps2.setDate(2, new java.sql.Date(item.getExpiryDate().getTime()));
+	                    } else {
+	                        ps2.setNull(2, java.sql.Types.DATE);
+	                    }
+	                    
+	                    ps2.setLong(3, item.getId()); // Use the ID as the Foreign Key
+	                    int rows2 = ps2.executeUpdate();
 
-	    } catch (Exception exception) {
-	        System.out.println("ex => " + exception.getMessage());
-	    } finally {
-	        
-	        try {
-	            if (Objects.nonNull(pstmt)) pstmt.close();
-	            if (Objects.nonNull(connection)) connection.close();
-	        } catch (SQLException exception) {
-	            System.out.println("ex => " + exception.getMessage());
+	                    if (rows2 > 0) {
+	                        // 2. Only commit if BOTH updates succeeded
+	                        conn.commit(); 
+	                        isSaved = true;
+	                    }
+	                }
+	            }
+	            
+	            // If the second update failed, rollback to prevent data inconsistency
+	            if (!isSaved) {
+	                conn.rollback();
+	            }
+
+	        } catch (SQLException e) {
+	            // 3. Rollback if any SQL error occurs
+	            conn.rollback(); 
+	            System.err.println("SQL Error: " + e.getMessage());
 	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
 	    }
-	    return false;
+	    return isSaved;
 	}
 
 	@Override

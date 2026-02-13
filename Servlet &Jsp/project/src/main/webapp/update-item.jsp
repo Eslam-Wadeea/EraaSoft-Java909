@@ -402,6 +402,17 @@ form {
         <div class="underline"></div>
         <label>TOTAL_NUMBER</label>
       </div>
+      <div class="input-data">
+        <input type="text" name="description" value="${item.description}" required>
+        <div class="underline"></div>
+        <label>Description</label>
+      </div>
+      <div class="input-data">
+        <input type="date" name="expiry_date" value="${item.expiryDate}" required>
+        <div class="underline"></div>
+        <label>expiryDate</label>
+      </div>
+      
      <input type="hidden" name="id" value="${item.id}">
      <input type="hidden" name="action" value="update-item">
 
