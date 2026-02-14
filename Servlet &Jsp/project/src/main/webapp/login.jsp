@@ -122,7 +122,6 @@
         <% } %>
 
         <form action="UserController" method="POST">
-            <%-- Hidden field to tell the Servlet to run handleLogin --%>
             <input type="hidden" name="action" value="login">
 
             <div class="form-group">

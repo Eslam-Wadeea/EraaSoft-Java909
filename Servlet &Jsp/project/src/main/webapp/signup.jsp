@@ -116,7 +116,6 @@
     <div class="signup-card">
         <h2>Create New Account</h2>
 
-        <%-- Requirement: Show validation message if signup fails --%>
         <% 
             String errorMsg = (String) request.getAttribute("error");
             if (errorMsg != null) { 
@@ -125,7 +124,6 @@
         <% } %>
 
         <form action="UserController" method="POST">
-            <%-- Hidden field to trigger handleSignup in your Servlet --%>
             <input type="hidden" name="action" value="signup">
 
             <div class="form-section">

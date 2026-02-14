@@ -78,14 +78,12 @@ public class UserController extends HttpServlet {
     }
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        // 1. Remove or invalidate the session
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.removeAttribute("isLoggedIn"); 
             session.invalidate(); 
         }
 
-        // 2. Remove cookies by setting their age to 0
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
