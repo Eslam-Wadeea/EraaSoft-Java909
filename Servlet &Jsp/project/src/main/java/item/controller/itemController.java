@@ -55,6 +55,11 @@ public class itemController extends HttpServlet {
 	
 	
 			break;
+			
+		case"remove-item-details":
+			deleteItemDetails(request,response);
+			break;
+			
 		default:
 			showItems(request,response);
 			
@@ -62,6 +67,14 @@ public class itemController extends HttpServlet {
 		
 	}
 	
+	private void deleteItemDetails(HttpServletRequest request, HttpServletResponse response) {
+		itemService itemService = new itemServiceImpl(dataSource);
+		int id = Integer.parseInt(request.getParameter("id"));
+	    itemService.deleteItemDetails(id);
+	    showItems(request, response);
+		
+	}
+
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 		
@@ -103,15 +116,13 @@ public class itemController extends HttpServlet {
 
 	private void updateItem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	    try {
-	        // 1. Get Parameters (Check case sensitivity)
 	        long id = Long.parseLong(request.getParameter("id"));
 	        String name = request.getParameter("name");
 	        double price = Double.parseDouble(request.getParameter("price"));
 	        int totalNumber = Integer.parseInt(request.getParameter("totalNumber"));
 	        String desc = request.getParameter("description");
-	        String expiryStr = request.getParameter("expiry_date"); // Matches JSP
+	        String expiryStr = request.getParameter("expiry_date");
 
-	        // 2. Build Object
 	        Item item = new Item(name, price, totalNumber , desc);
 	        item.setId(id);
 	        item.setDescription(desc);

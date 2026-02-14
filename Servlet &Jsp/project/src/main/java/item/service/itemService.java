@@ -14,7 +14,5 @@ public interface itemService {
 	boolean removeItem(Long id);
 	boolean isNameExists(String name);
 	boolean isNameExistsForOtherId(String name, Long currentId);
-	
-	
-
+	void deleteItemDetails(int itemId);
 }

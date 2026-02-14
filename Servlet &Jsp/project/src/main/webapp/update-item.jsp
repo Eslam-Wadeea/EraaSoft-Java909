@@ -430,7 +430,6 @@ form {
 </div>
 <!-- partial -->
 <script>
-    // 1. Post-Submission Feedback (Server -> Client)
     window.onload = function() {
         var status = "<%= request.getAttribute("status") != null ? request.getAttribute("status") : "" %>";
         if (status === "updateSuccess") {
@@ -441,7 +440,6 @@ form {
         }
     };
 
-    // 2. Pre-Submission Validation (Client-side)
     function validateAndUpdate() {
         const name = document.getElementsByName("name")[0].value.trim();
         const price = document.getElementsByName("price")[0].value;
@@ -452,7 +450,6 @@ form {
             return;
         }
 
-        // Only submit if validation passes
         document.getElementById("updateForm").submit();
     }
 </script>

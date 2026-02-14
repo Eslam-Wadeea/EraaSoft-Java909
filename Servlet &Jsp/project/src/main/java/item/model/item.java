@@ -11,6 +11,7 @@ public class Item {
     private String description; 
     private Date expiryDate;
     private Date issueDate;
+    private boolean hasDetails;
     
     
     
@@ -117,6 +118,13 @@ public class Item {
 
 	public void setIssueDate(Date issueDate) {
 		this.issueDate = issueDate;
+	}
+	public boolean isHasDetails() { // This is the method the JSP is missing
+	    return hasDetails;
+	}
+
+	public void setHasDetails(boolean hasDetails) {
+	    this.hasDetails = hasDetails;
 	}
 
 	@Override

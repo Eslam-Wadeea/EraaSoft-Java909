@@ -417,7 +417,6 @@ form {
 </div>
 <!-- partial -->
 <script>
-    // 1. This runs AFTER the server processes the request
     window.onload = function() {
         var status = "<%= request.getAttribute("status") != null ? request.getAttribute("status") : "" %>";
         if (status === "success") {
@@ -428,13 +427,11 @@ form {
         }
     };
 
-    // 2. This runs BEFORE the form is sent to the server
     function validateAndSubmit() {
         const name = document.getElementsByName("name")[0].value.trim();
         const price = document.getElementsByName("price")[0].value.trim();
         const total = document.getElementsByName("totalNumber")[0].value.trim();
 
-        // Combined Validation
         if (name === "") {
             alert("Please enter a valid Name.");
             return;
@@ -448,7 +445,6 @@ form {
             return;
         }
 
-        // If validation passes, submit to the Controller to check for duplicates
         document.getElementById("itemForm").submit();
     }
 </script>

@@ -295,6 +295,12 @@ tbody tr:nth-child(n+4) { animation-delay: 0.4s; }
                 
                 <td>
                     <a href="/project/itemController?action=show-item&id=<%=item.getId()%>">Update</a>
+                    <% if (!item.isHasDetails()) { %>
+        			<a href="/project/itemController?action=show-item&id=<%=item.getId()%>" class="btn-add-details">Add Details</a>
+    				<% } else { %>
+        			<a href="/project/itemController?action=remove-item-details&id=<%=item.getId()%>" 
+           			class="btn-delete-details" onclick="return confirm('Delete only the details?')">Delete Details</a>
+    				<% } %>
                     <a href="/project/itemController?action=remove-item&id=<%=item.getId()%>" 
                        onclick="alert('Item deleted successfully!')">Delete</a>
                 </td>

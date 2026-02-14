@@ -27,11 +27,10 @@ public class itemServiceImpl implements itemService {
 	@Override
 	public List<Item> getItems() {
 		List<Item> list = new ArrayList<>();
-	    // استخدام LEFT JOIN لضمان ظهور المنتجات حتى لو لم يكن لها تفاصيل بعد
 	    String sql = "SELECT i.ID, i.NAME, i.PRICE, i.TOTAL_NUMBER, d.DESCRIPTION, d.EXPIRY_DATE " +
 	                 "FROM DIP.ITEM i " +
 	                 "LEFT JOIN DIP.ITEM_DETAILS d ON i.ID = d.ITEM_ID " +
-	                 "WHERE i.IS_DELETED = 0"; // المهمة 10 من المستوى الأول
+	                 "WHERE i.IS_DELETED = 0";
 
 	    try (Connection conn = dataSource.getConnection();
 	         PreparedStatement ps = conn.prepareStatement(sql);
@@ -43,10 +42,13 @@ public class itemServiceImpl implements itemService {
 	            item.setName(rs.getString("NAME"));
 	            item.setPrice(rs.getDouble("PRICE"));
 	            item.setTotalNumber(rs.getInt("TOTAL_NUMBER"));
-	            
-	            // قراءة البيانات الجديدة من نتيجة الاستعلام
-	            item.setDescription(rs.getString("DESCRIPTION"));
+	            String desc = rs.getString("DESCRIPTION");
+	            item.setDescription(desc);
 	            item.setExpiryDate(rs.getDate("EXPIRY_DATE"));
+	            
+	     
+	            
+	            item.setHasDetails(desc != null);
 	            
 	            list.add(item);
 	        }
@@ -63,8 +65,8 @@ public class itemServiceImpl implements itemService {
 		Statement statement = null;
 		
 		try {
-			connection = dataSource.getConnection();  // connection open
-			statement = connection.createStatement(); // statement open
+			connection = dataSource.getConnection();
+			statement = connection.createStatement();
 			
 			String query = "SELECT * FROM DIP.item where id = " + id;
 			ResultSet resultSet = statement.executeQuery(query);
@@ -99,11 +101,9 @@ public class itemServiceImpl implements itemService {
 	@Override
 	public boolean createItem(Item item) {
 	    boolean isSaved = false;
-	    // الاستعلام الأول للجدول الأساسي
 	    String sqlItem = "INSERT INTO DIP.ITEM (NAME, PRICE, TOTAL_NUMBER, IS_DELETED) VALUES (?, ?, ?, 0)";
 	    String sqlDetails = "INSERT INTO DIP.ITEM_DETAILS (ID, DESCRIPTION, ISSUE_DATE, EXPIRY_DATE, ITEM_ID) VALUES (DIP.SEQ_DETAILS.NEXTVAL, ?, SYSDATE, ?, ?)";
 	    try (Connection conn = dataSource.getConnection()) {
-	        // 1. بدء الـ Transaction يدوياً
 	        conn.setAutoCommit(false); 
 
 	        try (PreparedStatement ps1 = conn.prepareStatement(sqlItem, new String[]{"ID"})) {
@@ -112,8 +112,6 @@ public class itemServiceImpl implements itemService {
 	            ps1.setInt(3, item.getTotalNumber());
 	            
 	            int rows1 = ps1.executeUpdate();
-
-	            // 2. التحقق من نجاح الإدخال الأول والحصول على الـ ID المولد
 	            if (rows1 > 0) {
 	                ResultSet rs = ps1.getGeneratedKeys();
 	                if (rs.next()) {
@@ -121,19 +119,17 @@ public class itemServiceImpl implements itemService {
 
 	                    try (PreparedStatement ps2 = conn.prepareStatement(sqlDetails)) {
 	                        ps2.setString(1, item.getDescription());
-	                        
-	                        // معالجة التاريخ لمنع خطأ الـ Null الذي ظهر لك في الكونسول
+	                       
 	                        if (item.getExpiryDate() != null) {
 	                            ps2.setDate(2, new java.sql.Date(item.getExpiryDate().getTime()));
 	                        } else {
 	                            ps2.setNull(2, java.sql.Types.DATE);
 	                        }
 	                        
-	                        ps2.setInt(3, generatedItemId); // الربط عبر الـ Foreign Key
+	                        ps2.setInt(3, generatedItemId);
 	                        
 	                        int rows2 = ps2.executeUpdate();
-	                        
-	                        // 3. إذا نجح الحفظ في الجدولين، نقوم بالـ Commit
+	                    
 	                        if (rows2 > 0) {
 	                            conn.commit(); 
 	                            isSaved = true;
@@ -141,8 +137,6 @@ public class itemServiceImpl implements itemService {
 	                    }
 	                }
 	            }
-	            
-	            // 4. إذا فشل أي جزء، نقوم بعمل تراجع (Rollback)
 	            if (!isSaved) {
 	                conn.rollback();
 	            }
@@ -160,14 +154,10 @@ public class itemServiceImpl implements itemService {
 	@Override
 	public boolean updateItem(Item item) {
 	    boolean isSaved = false;
-	    // Query 1: Updates name, price, and total number in the main table
 	    String sqlItem = "UPDATE DIP.ITEM SET NAME = ?, PRICE = ?, TOTAL_NUMBER = ? WHERE ID = ?";
-	    
-	    // Query 2: Updates description and expiry date in the details table
 	    String sqlDetails = "UPDATE DIP.ITEM_DETAILS SET DESCRIPTION = ?, EXPIRY_DATE = ? WHERE ITEM_ID = ?";
 
 	    try (Connection conn = dataSource.getConnection()) {
-	        // 1. Start Transaction manually to ensure both tables update or none do
 	        conn.setAutoCommit(false); 
 
 	        try (PreparedStatement ps1 = conn.prepareStatement(sqlItem)) {
@@ -181,32 +171,26 @@ public class itemServiceImpl implements itemService {
 	            if (rows1 > 0) {
 	                try (PreparedStatement ps2 = conn.prepareStatement(sqlDetails)) {
 	                    ps2.setString(1, item.getDescription());
-	                    
-	                    // Handle Date: Convert java.util.Date to java.sql.Date
 	                    if (item.getExpiryDate() != null) {
 	                        ps2.setDate(2, new java.sql.Date(item.getExpiryDate().getTime()));
 	                    } else {
 	                        ps2.setNull(2, java.sql.Types.DATE);
 	                    }
 	                    
-	                    ps2.setLong(3, item.getId()); // Use the ID as the Foreign Key
+	                    ps2.setLong(3, item.getId());
 	                    int rows2 = ps2.executeUpdate();
 
 	                    if (rows2 > 0) {
-	                        // 2. Only commit if BOTH updates succeeded
 	                        conn.commit(); 
 	                        isSaved = true;
 	                    }
 	                }
 	            }
-	            
-	            // If the second update failed, rollback to prevent data inconsistency
 	            if (!isSaved) {
 	                conn.rollback();
 	            }
 
 	        } catch (SQLException e) {
-	            // 3. Rollback if any SQL error occurs
 	            conn.rollback(); 
 	            System.err.println("SQL Error: " + e.getMessage());
 	        }
@@ -267,19 +251,16 @@ public class itemServiceImpl implements itemService {
 	    return false;
 	}
 	public boolean isNameExistsForOtherId(String name, Long currentId) {
-	    // We check for the name but EXCLUDE the current ID
 	    String query = "SELECT COUNT(*) FROM DIP.ITEM WHERE NAME = ? AND ID != ? AND IS_DELETED = 0";
 	    
 	    try (Connection connection = dataSource.getConnection();
 	         PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
-	        // Bind the parameters to the ? placeholders
 	        pstmt.setString(1, name);
 	        pstmt.setLong(2, currentId);
 	        
 	        try (ResultSet rs = pstmt.executeQuery()) {
 	            if (rs.next()) {
-	                // If count > 0, the name is already taken by someone else
 	                return rs.getInt(1) > 0;
 	            }
 	        }
@@ -287,6 +268,18 @@ public class itemServiceImpl implements itemService {
 	        System.out.println("Database Error (isNameExistsForOtherId): " + e.getMessage());
 	    }
 	    return false;
+	}
+	
+	@Override
+	public void deleteItemDetails(int itemId) {
+	    String sql = "DELETE FROM DIP.ITEM_DETAILS WHERE ITEM_ID = ?";
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, itemId);
+	        ps.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
 	
 
