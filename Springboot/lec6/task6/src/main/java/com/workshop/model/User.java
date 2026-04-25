@@ -8,12 +8,13 @@ import java.util.List;
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq")
+    @SequenceGenerator(name = "task_seq", sequenceName = "TASK_OBJ_SEQ", allocationSize = 1)
     private Long id;
     private String name;
     private int age;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "user_details_id", referencedColumnName = "id")
     private UserDetails userDetails =  new UserDetails();
 
@@ -24,7 +25,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
     private List<Friend> friends = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user" ,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user" )
     private List<Post> posts= new ArrayList<>();
 
     public Long getId() {
